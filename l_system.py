@@ -1,4 +1,5 @@
 import sys
+import math
 from datetime import datetime
 from OpenGL.GL import *
 from OpenGL.GLUT import *
@@ -12,6 +13,11 @@ height = 600
 step = 10
 g = grammar()
 
+def rotate(dir, angle):
+    angle = math.radians(angle)
+    x = (math.cos(angle)*dir[0]) - (math.sin(angle)*dir[1])
+    y = (math.sin(angle)*dir[0]) + (math.cos(angle)*dir[1])
+    return [x,y]
 
 def draw():
     glViewport(0, 0, width, height)
@@ -22,11 +28,7 @@ def draw():
     glLoadIdentity()
     p_stack = []
     d_stack = []
-    dirs = [(0, step),   #up
-            (step, 0),   #right
-            (0, -step),  #down
-            (-step, 0)]  #left
-    current_d = 0
+    current_d = [0,step] #up
     current_p = [width//2, height//2]
     glClearColor ( 0.0, 0.0, 0.0, 1.0) ;
     glClear ( GL_COLOR_BUFFER_BIT ) ;
@@ -39,23 +41,23 @@ def draw():
         action = g.i_rules[c]
         if action == "push":
             p_stack.append([current_p[0], current_p[1]])
-            d_stack.append(current_d)
-            current_d = (current_d + 1) % 4 #turn right
+            d_stack.append([current_d[0], current_d[1]])
+            current_d = rotate(current_d, -90) #right 
         elif action == "pop":
             current_p = p_stack.pop()
             current_d = d_stack.pop()
-            current_d = (current_d - 1) % 4 #turn left
+            current_d = rotate(current_d, 90) #left
             glEnd()
             glBegin(GL_LINE_STRIP)       
             glColor3f(1.0, 1.0, 1.0);       
             glVertex2f(current_p[0], current_p[1])
         if action == "right":
-            current_d = (current_d + 1) % 4
+            current_d = rotate(current_d, -90)
         elif action == "left":
-            current_d = (current_d - 1) % 4
+            current_d = rotate(current_d, 90)
         elif action == "forward":
-            current_p[0] += dirs[current_d][0]
-            current_p[1] += dirs[current_d][1]
+            current_p[0] += current_d[0]
+            current_p[1] += current_d[1]
             glVertex2f(current_p[0], current_p[1])
     glEnd()
     glutSwapBuffers()
@@ -79,7 +81,7 @@ if __name__ == "__main__":
         exit()
     file = sys.argv[1]
     g.parse(file)
-    g.step(8)
+    g.step(10)
     glutInit()
     glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE)
     glutInitWindowSize(width, height)
