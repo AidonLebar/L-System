@@ -28,7 +28,7 @@ def draw():
     glLoadIdentity()
     p_stack = []
     d_stack = []
-    current_d = [0,step] #up
+    current_d = [0,1] #up
     current_p = [width//2, height//2]
     glClearColor ( 0.0, 0.0, 0.0, 1.0) ;
     glClear ( GL_COLOR_BUFFER_BIT ) ;
@@ -38,26 +38,47 @@ def draw():
     for c in g.l_string:
         if c not in g.i_rules.keys():
             continue
-        action = g.i_rules[c]
+        action = g.i_rules[c][0]
         if action == "push":
             p_stack.append([current_p[0], current_p[1]])
             d_stack.append([current_d[0], current_d[1]])
-            current_d = rotate(current_d, -90) #right 
-        elif action == "pop":
+            if g.i_rules[c][1]:
+                degrees = int(g.i_rules[c][1][0])
+                current_d = rotate(current_d, -degrees)
+            else:
+                current_d = rotate(current_d, -90) #right
+        elif action == "pop": 
             current_p = p_stack.pop()
             current_d = d_stack.pop()
-            current_d = rotate(current_d, 90) #left
+            if g.i_rules[c][1]:
+                degrees = int(g.i_rules[c][1][0])
+                current_d = rotate(current_d, degrees)
+            else:
+                current_d = rotate(current_d, 90) #left
             glEnd()
             glBegin(GL_LINE_STRIP)       
             glColor3f(1.0, 1.0, 1.0);       
             glVertex2f(current_p[0], current_p[1])
-        if action == "right":
-            current_d = rotate(current_d, -90)
+        elif action == "right":
+            if g.i_rules[c][1]:
+                degrees = int(g.i_rules[c][1][0])
+                current_d = rotate(current_d, -degrees)
+            else:
+                current_d = rotate(current_d, -90)
         elif action == "left":
-            current_d = rotate(current_d, 90)
+            if g.i_rules[c][1]:
+                degrees = int(g.i_rules[c][1][0])
+                current_d = rotate(current_d, degrees)
+            else:
+                current_d = rotate(current_d, 90)
         elif action == "forward":
-            current_p[0] += current_d[0]
-            current_p[1] += current_d[1]
+            if g.i_rules[c][1]:
+                step_param = int(g.i_rules[c][1][0])
+                current_p[0] += current_d[0] * step_param
+                current_p[1] += current_d[1] * step_param
+            else:
+                current_p[0] += current_d[0] * step
+                current_p[1] += current_d[1] * step
             glVertex2f(current_p[0], current_p[1])
     glEnd()
     glutSwapBuffers()
