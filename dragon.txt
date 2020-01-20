@@ -1,0 +1,8 @@
+FX
+###
+X->XRYFR
+Y->LFXLY
+###
+F=forward
+R=right
+L=left
