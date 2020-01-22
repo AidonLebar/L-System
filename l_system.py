@@ -33,7 +33,8 @@ def draw():
     glClearColor ( 0.0, 0.0, 0.0, 1.0) ;
     glClear ( GL_COLOR_BUFFER_BIT ) ;
     glBegin(GL_LINE_STRIP)
-    glColor3f(1.0, 1.0, 1.0)
+    current_c = (1.0, 1.0, 1.0)
+    glColor3f(current_c[0], current_c[1], current_c[2])
     glVertex2f(current_p[0], current_p[1])
     for c in g.l_string:
         if c not in g.i_rules.keys():
@@ -56,8 +57,8 @@ def draw():
             else:
                 current_d = rotate(current_d, 90) #left
             glEnd()
-            glBegin(GL_LINE_STRIP)       
-            glColor3f(1.0, 1.0, 1.0);       
+            glBegin(GL_LINE_STRIP)
+            glColor3f(current_c[0], current_c[1], current_c[2])
             glVertex2f(current_p[0], current_p[1])
         elif action == "right":
             if g.i_rules[c][1]:
@@ -80,6 +81,12 @@ def draw():
                 current_p[0] += current_d[0] * step
                 current_p[1] += current_d[1] * step
             glVertex2f(current_p[0], current_p[1])
+        elif action == "colour":
+            red = int(g.i_rules[c][1][0])/255
+            green = int(g.i_rules[c][1][1])/255
+            blue = int(g.i_rules[c][1][2])/255
+            current_c = (red, green, blue)
+            glColor3f(red, green, blue)
     glEnd()
     glutSwapBuffers()
     
@@ -102,7 +109,7 @@ if __name__ == "__main__":
         exit()
     file = sys.argv[1]
     g.parse(file)
-    g.step(10)
+    g.step(4)
     glutInit()
     glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE)
     glutInitWindowSize(width, height)
