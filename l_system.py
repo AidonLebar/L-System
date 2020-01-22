@@ -26,6 +26,7 @@ def draw():
     glOrtho(0.0, width, 0.0, height, 0.0, 1.0)
     glMatrixMode (GL_MODELVIEW)
     glLoadIdentity()
+    c_stack = []
     p_stack = []
     d_stack = []
     current_d = [0,1] #up
@@ -41,6 +42,7 @@ def draw():
             continue
         action = g.i_rules[c][0]
         if action == "push":
+            c_stack.append(current_c)
             p_stack.append([current_p[0], current_p[1]])
             d_stack.append([current_d[0], current_d[1]])
             if g.i_rules[c][1]:
@@ -48,7 +50,8 @@ def draw():
                 current_d = rotate(current_d, -degrees)
             else:
                 current_d = rotate(current_d, -90) #right
-        elif action == "pop": 
+        elif action == "pop":
+            current_c = c_stack.pop()
             current_p = p_stack.pop()
             current_d = d_stack.pop()
             if g.i_rules[c][1]:
