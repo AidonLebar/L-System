@@ -1,11 +1,66 @@
 import re
 import random
 
-class grammar:
+class PRule:
+    symbol = ""
+    rewrite1 = ""
+    rewrite2 = ""
+    prob = 0
+
+    def error_out(self, reason):
+        if self.prob != 1:
+            print("Error in rule {}({})->{}:{}".format(self.symbol,
+                                                       self.prob,
+                                                       self.rewrite1,
+                                                       self.rewrite2))
+        else:
+            print("Error in rule {}->{}".format(self.symbol, self.rewrite1))
+        print("Reason: {}".format(reason))
+        exit()
+
+    def __str__(self):
+        if self.prob != 1:
+            return "{}({})->{}:{}".format(self.symbol,
+                                          self.prob,
+                                          self.rewrite1,
+                                          self.rewrite2)
+        else:
+           return "{}->{}".format(self.symbol, self.rewrite1)
+
+class IRule:
+    symbol = ""
+    action = ""
+    param_count = 0
+    params = []
+
+    def __init__(self):
+        self.params = []
+
+    def error_out(self, reason):
+        if self.param_count != 0:
+            param_string = ", ".join([str(x) for x in self.params])
+            print("Error in rule {}={}({})".format(self.symbol,
+                                                   self.action,
+                                                   param_string))
+        else:
+            print("Error in rule {}={}".format(self.symbol, self.action))
+        print("Reason: {}".format(reason))
+        exit()
+
+    def __str__(self):
+        if self.param_count != 0:
+            param_string = ", ".join([str(x) for x in self.params])
+            return "{}={}({})".format(self.symbol,
+                                      self.action,
+                                      param_string)
+        else:
+            return "{}={}".format(self.symbol, self.action)
+
+class Grammar:
     axiom = ""
     l_string = ""
     #production and interpretation rules
-    p_rules = {}
+    p_rules = []
     i_rules = {}
 
     def parse(self, filename):
@@ -21,58 +76,68 @@ class grammar:
                     p = False
                     continue
                 if p: #p rules
+                    p_rule = PRule()
                     rule = l.split("->") 
                     if(len(rule) == 2):
                         if re.search( "\(.*\)", rule[0]):
                             prob = re.search(r"\(.*\)", rule[0]).group()
                             prob = float(re.sub(r"[\(\)]", "", prob))
-                            if prob < 0 or prob > 1:
-                                print("Probability must be between 0 and 1.")
-                                exit()
-                            lhs = re.sub(r"\(.*\)", "", rule[0])
+                            p_rule.prob = prob
+                            p_rule.symbol =  re.sub(r"\(.*\)", "", rule[0])
                             if len(rule[1].split(":")) != 2:
-                                print("Incorrect # of oucomes for binary stochastic production rule.")
+                                print("Error in rule {}({})->{}".format(p_rule.symbol,
+                                                                        p_rule.prob,
+                                                                        rule[1]))
+                                print("Reason: Incorrect # of outcomes provided.")
                                 exit()
-                            rhs = [prob] + (rule[1].split(":"))
-                            self.p_rules[lhs] = rhs
+                            else:
+                                rhs = rule[1].split(":")
+                                p_rule.rewrite1 = rhs[0]
+                                p_rule.rewrite2 = rhs[1]
+                                if p_rule.prob < 0 or p_rule.prob > 1:
+                                    p_rule.error_out("Probability must be between 0 and 1.")
                         else:
-                            self.p_rules[rule[0]] = [1.0, rule[1], ""] #apply with 100% prob
+                            p_rule.prob = 1
+                            p_rule.symbol = rule[0]
+                            p_rule.rewrite1 = rule[1]
+                        self.p_rules.append(p_rule)
                 else: # i rules
+                    i_rule = IRule()
                     rule = l.split("=")
                     if(len(rule) == 2):
-                        instr = ""
-                        params = []
                         if re.search( "\(.*\)", rule[1]):
                             r = rule[1].split("(")
-                            instr = r[0]
+                            i_rule.action = r[0]
                             s = ""
                             for c in r[1]:
                                 if c == " ":
                                     continue
                                 elif c == ")":
-                                    params.append(s)
+                                    i_rule.params.append(s)
+                                    i_rule.param_count += 1
                                     break
                                 elif c == ",":
-                                    params.append(s)
+                                    i_rule.params.append(s)
+                                    i_rule.param_count += 1
                                     s = ""
                                 else:
                                     s += c
                         else:
-                            instr = rule[1]
-                        self.i_rules[rule[0]] = [instr, params]
-                    
+                            i_rule.action = rule[1]
+                        i_rule.symbol = rule[0]
+                        self.i_rules[i_rule.symbol] = i_rule
     def step(self, count = 1):
         for i in range(count):
             s = ""
             for c in self.l_string:
                 identity = True
-                for k in self.p_rules.keys():
-                    if c == k:
+                for p in self.p_rules:
+                    if c == p.symbol:
                         rand = random.uniform(0,1)
-                        if rand < self.p_rules[k][0]:
-                            s += self.p_rules[k][1]
+                        if rand < p.prob:
+                            s += p.rewrite1
                         else:
-                            s += self.p_rules[k][2]
+                            s += p.rewrite2
                         identity = False
                 if(identity):
                     s += c                       
