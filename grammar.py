@@ -59,6 +59,7 @@ class IRule:
 class Grammar:
     axiom = ""
     l_string = ""
+    generations = []
     #production and interpretation rules
     p_rules = []
     i_rules = {}
@@ -142,3 +143,16 @@ class Grammar:
                 if(identity):
                     s += c                       
             self.l_string = s
+
+    def setup(self, count = 12):
+        for i in range(count):
+            self.step()
+            self.generations.append(self.l_string)
+
+    def set_gen(self, gen):
+        if gen < 0:
+            gen = 0
+        if gen >= len(self.generations):
+            gen = len(self.generations) - 1
+        self.l_string = self.generations[gen]
+            

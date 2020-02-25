@@ -11,6 +11,7 @@ from PIL import ImageOps
 width = 600
 height = 600
 step = 10
+gen = 3
 g = Grammar()
 
 def rotate(dir, angle):
@@ -30,7 +31,7 @@ def draw():
     p_stack = []
     d_stack = []
     current_d = [0,1] #up
-    current_p = [width//2, height//5]
+    current_p = [width//2, height//4]
     glClearColor ( 0.0, 0.0, 0.0, 1.0) ;
     glClear ( GL_COLOR_BUFFER_BIT ) ;
     glBegin(GL_LINE_STRIP)
@@ -117,6 +118,7 @@ def draw():
     glutSwapBuffers()
 
 def key_func(key, x, y):
+    global gen
     if key == b'\x03' or key == b'q':
         exit()
     if key == b's':
@@ -128,14 +130,36 @@ def key_func(key, x, y):
         image = Image.frombytes("RGBA", (width, height), data)
         image = ImageOps.flip(image)
         image.save("{}.png".format(time), "PNG")
+    if key == b'>':
+        if gen < len(g.generations):
+            gen += 1
+        g.set_gen(gen)
+        glutPostRedisplay()
+    if key == b'<':
+        if gen > 0:
+            gen -= 1
+        g.set_gen(gen)
+        glutPostRedisplay()
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Error: Please provide grammar file.")
         exit()
     file = sys.argv[1]
+
+    n = 12
+    if len(sys.argv) == 3:
+        try:
+            n = int(sys.argv[2])
+        except ValueError:
+            print("Pre-initialization number must be an integer")
+            exit()
+    if n < 0:
+        print("Pre-initialization number must be greater than 0")
+        exit()
     g.parse(file)
-    g.step(6)
+    g.setup(n)
+    g.set_gen(gen)
     glutInit()
     glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE)
     glutInitWindowSize(width, height)
