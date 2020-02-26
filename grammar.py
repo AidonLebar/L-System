@@ -8,13 +8,7 @@ class PRule:
     prob = 0
 
     def error_out(self, reason):
-        if self.prob != 1:
-            print("Error in rule {}({})->{}:{}".format(self.symbol,
-                                                       self.prob,
-                                                       self.rewrite1,
-                                                       self.rewrite2))
-        else:
-            print("Error in rule {}->{}".format(self.symbol, self.rewrite1))
+        print("Error in rule {}".format(self))
         print("Reason: {}".format(reason))
         exit()
 
@@ -37,13 +31,7 @@ class IRule:
         self.params = []
 
     def error_out(self, reason):
-        if self.param_count != 0:
-            param_string = ", ".join([str(x) for x in self.params])
-            print("Error in rule {}={}({})".format(self.symbol,
-                                                   self.action,
-                                                   param_string))
-        else:
-            print("Error in rule {}={}".format(self.symbol, self.action))
+        print("Error in rule {}".format(self))
         print("Reason: {}".format(reason))
         exit()
 
