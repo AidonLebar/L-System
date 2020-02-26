@@ -143,6 +143,7 @@ class Grammar:
             self.l_string = s
 
     def setup(self, count = 12):
+        self.generations.append(self.axiom)
         for i in range(count):
             self.step()
             self.generations.append(self.l_string)
