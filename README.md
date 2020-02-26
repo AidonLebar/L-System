@@ -32,3 +32,11 @@ The current supported interepretation actions are:
 * `pop` pop position and location from stack and turn left 90 degrees
 * `pop(x)` pop position and location from stack and turn left 90 degrees
 * `colour(r,g,b)` change colour to specified RGB values (RGB ranges are 0-255)
+
+## To Run
+`python l_system.py <path to grammar file> <numberof genertions to compute>`
+
+## Key Bindings
+* `s` to save image to png format. The filename will be a timestamp.
+* `<` go back one generation of rewrites
+* `>` go forward one generation of rewrites
