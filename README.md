@@ -37,6 +37,7 @@ The current supported interepretation actions are:
 `python l_system.py <path to grammar file> <numberof genertions to compute>`
 
 ## Key Bindings
+* `q` or `Ctrl+C` to exit
 * `s` to save image to png format. The filename will be a timestamp.
 * `<` go back one generation of rewrites
 * `>` go forward one generation of rewrites
