@@ -20,6 +20,26 @@ class PRule:
                                           self.rewrite2)
         else:
            return "{}->{}".format(self.symbol, self.rewrite1)
+    def __repr__(self):
+        return self.__str__()
+
+class ContextSenstivePRule(PRule):
+    pre = ""
+    post = ""
+
+    def __str__(self):
+        return "{}<{}>{}->{}".format(self.pre,
+                                     self.symbol,
+                                     self.post,
+                                     self.rewrite1)
+
+    def match(self, str, index):
+        pre = str[index - len(self.pre) : index]
+        post = str[index + 1 : index + len(self.post) + 1]
+        if pre == self.pre and post == self.post:
+            return True
+        else:
+            return False
 
 class IRule:
     symbol = ""
@@ -68,7 +88,18 @@ class Grammar:
                     p_rule = PRule()
                     rule = l.split("->") 
                     if(len(rule) == 2):
-                        if re.search( "\(.*\)", rule[0]):
+                        if re.search(".*\<.*\>.*", rule[0]):
+                            p_rule = ContextSenstivePRule()
+                            temp = rule[0].split("<")
+                            p_rule.pre = temp[0]
+                            temp2 = temp[1].split(">")
+                            p_rule.symbol = temp2[0]
+                            p_rule.post = temp2[1]
+                            p_rule.rewrite1 = rule[1]
+                            p_rule.prob = 1
+                            if len(temp2[0]) != 1:
+                                p_rule.error_out("Only one symbol allowed in < >")
+                        elif re.search( "\(.*\)", rule[0]):
                             prob = re.search(r"\(.*\)", rule[0]).group()
                             prob = float(re.sub(r"[\(\)]", "", prob))
                             p_rule.prob = prob
@@ -118,16 +149,22 @@ class Grammar:
     def step(self, count = 1):
         for i in range(count):
             s = ""
-            for c in self.l_string:
+            for n,c in enumerate(self.l_string):
                 if c in self.p_rules:
                     p = self.p_rules[c]
                     rand = random.uniform(0,1)
-                    if rand < p.prob:
-                        s += p.rewrite1
+                    if isinstance(p, ContextSenstivePRule):
+                        if p.match(self.l_string, n):
+                            s += p.rewrite1
+                        else:
+                            s += c
                     else:
-                        s += p.rewrite2
+                        if rand < p.prob:
+                            s += p.rewrite1
+                        else:
+                            s += p.rewrite2
                 else:
-                    s += c                       
+                    s += c
             self.l_string = s
 
     def setup(self, count = 12):
