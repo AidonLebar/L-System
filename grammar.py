@@ -61,7 +61,7 @@ class Grammar:
     l_string = ""
     generations = []
     #production and interpretation rules
-    p_rules = []
+    p_rules = {}
     i_rules = {}
 
     def parse(self, filename):
@@ -101,7 +101,7 @@ class Grammar:
                             p_rule.prob = 1
                             p_rule.symbol = rule[0]
                             p_rule.rewrite1 = rule[1]
-                        self.p_rules.append(p_rule)
+                        self.p_rules[p_rule.symbol] = p_rule
                 else: # i rules
                     i_rule = IRule()
                     rule = l.split("=")
@@ -131,16 +131,14 @@ class Grammar:
         for i in range(count):
             s = ""
             for c in self.l_string:
-                identity = True
-                for p in self.p_rules:
-                    if c == p.symbol:
-                        rand = random.uniform(0,1)
-                        if rand < p.prob:
-                            s += p.rewrite1
-                        else:
-                            s += p.rewrite2
-                        identity = False
-                if(identity):
+                if c in self.p_rules:
+                    p = self.p_rules[c]
+                    rand = random.uniform(0,1)
+                    if rand < p.prob:
+                        s += p.rewrite1
+                    else:
+                        s += p.rewrite2
+                else:
                     s += c                       
             self.l_string = s
 
